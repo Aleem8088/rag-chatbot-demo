@@ -1,0 +1,12 @@
+[
+  {"q": "How many days do I have to return an item?", "expected_source": "returns-policy.md", "expected_phrase": "30 days", "answerable": true},
+  {"q": "Can I return a gift card?", "expected_source": "returns-policy.md", "expected_phrase": "not refundable", "answerable": true},
+  {"q": "How much does express shipping cost?", "expected_source": "shipping-faq.md", "expected_phrase": "$15", "answerable": true},
+  {"q": "What order total gets free shipping?", "expected_source": "shipping-faq.md", "expected_phrase": "$75", "answerable": true},
+  {"q": "Which countries do you ship to besides the US?", "expected_source": "shipping-faq.md", "expected_phrase": "Canada", "answerable": true},
+  {"q": "How long is the warranty on tents?", "expected_source": "warranty.md", "expected_phrase": "2-year", "answerable": true},
+  {"q": "How much is an out-of-warranty zipper repair?", "expected_source": "warranty.md", "expected_phrase": "$20", "answerable": true},
+  {"q": "How long do refunds take after the parcel arrives?", "expected_source": "returns-policy.md", "expected_phrase": "5 business days", "answerable": true},
+  {"q": "Do you sell gift wrapping?", "expected_source": null, "expected_phrase": null, "answerable": false},
+  {"q": "What is the CEO's name?", "expected_source": null, "expected_phrase": null, "answerable": false}
+]

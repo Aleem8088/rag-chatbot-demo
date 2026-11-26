@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Document Q&amp;A with citations</title>
+  <style>
+    :root { --bg:#f7f7f5; --fg:#1c1c1a; --muted:#6b6b66; --card:#fff; --line:#e3e3de; --accent:#2f6f4f; }
+    @media (prefers-color-scheme: dark) {
+      :root { --bg:#161614; --fg:#ececea; --muted:#9a9a94; --card:#1f1f1c; --line:#33332f; --accent:#6fbf94; }
+    }
+    * { box-sizing: border-box; }
+    body { margin:0; background:var(--bg); color:var(--fg); font:16px/1.5 system-ui, sans-serif; }
+    main { max-width: 720px; margin: 0 auto; padding: 24px 16px 64px; }
+    h1 { font-size: 1.4rem; margin: 0 0 4px; }
+    p.sub { color: var(--muted); margin: 0 0 20px; }
+    .card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 16px; margin-bottom: 16px; }
+    form { display: flex; gap: 8px; }
+    input[type=text] { flex: 1; padding: 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--fg); font: inherit; }
+    button { padding: 10px 16px; border: 0; border-radius: 8px; background: var(--accent); color: #fff; font: inherit; cursor: pointer; }
+    button:disabled { opacity: .6; cursor: wait; }
+    .answer { white-space: pre-wrap; }
+    .cite { border-left: 3px solid var(--accent); padding: 6px 10px; margin-top: 10px; font-size: .9rem; color: var(--muted); }
+    .cite b { color: var(--fg); }
+    .nf { color: var(--muted); font-style: italic; }
+    .err { color: #b3261e; }
+    ul.src { margin: 6px 0 0; padding-left: 18px; color: var(--muted); font-size: .9rem; }
+  </style>
+</head>
+<body>
+<main>
+  <h1>Ask your documents</h1>
+  <p class="sub">Answers come only from the documents below, with sources. If it isn't in them, the assistant says so.</p>
+
+  <div class="card">
+    <form id="ask-form">
+      <input id="q" type="text" maxlength="500" placeholder="e.g. How long do I have to return an item?" required>
+      <button id="go" type="submit">Ask</button>
+    </form>
+  </div>
+
+  <div id="result" class="card" hidden></div>
+
+  <div class="card">
+    <strong>Documents loaded</strong>
+    <ul class="src" id="sources">
+      {% for s in sources %}<li>{{ s }}</li>{% endfor %}
+    </ul>
+    <form id="up-form" style="margin-top:12px">
+      <input id="file" type="file" accept=".txt,.md,.pdf" required>
+      <button type="submit">Upload</button>
+    </form>
+    <div id="up-msg" class="sub" style="margin:8px 0 0"></div>
+  </div>
+</main>
+
+<script>
+  const result = document.getElementById("result");
+  const go = document.getElementById("go");
+
+  function el(tag, cls, text) {
+    const e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (text !== undefined) e.textContent = text;
+    return e;
+  }
+
+  document.getElementById("ask-form").addEventListener("submit", async (ev) => {
+    ev.preventDefault();
+    go.disabled = true;
+    result.hidden = false;
+    result.replaceChildren(el("div", "sub", "Thinking..."));
+    try {
+      const res = await fetch("/ask", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({question: document.getElementById("q").value}),
+      });
+      const data = await res.json();
+      result.replaceChildren();
+      if (!res.ok) { result.append(el("div", "err", data.error || "Something went wrong.")); return; }
+      result.append(el("div", data.found ? "answer" : "nf", data.answer));
+      for (const c of data.citations) {
+        const box = el("div", "cite");
+        box.append(el("b", null, `[${c.label}] ${c.source}${c.location ? " (" + c.location + ")" : ""}`));
+        box.append(el("div", null, c.snippet));
+        result.append(box);
+      }
+    } catch (e) {
+      result.replaceChildren(el("div", "err", "Network error. Please try again."));
+    } finally { go.disabled = false; }
+  });
+
+  document.getElementById("up-form").addEventListener("submit", async (ev) => {
+    ev.preventDefault();
+    const msg = document.getElementById("up-msg");
+    const fd = new FormData();
+    fd.append("file", document.getElementById("file").files[0]);
+    const res = await fetch("/upload", {method: "POST", body: fd});
+    const data = await res.json();
+    if (!res.ok) { msg.textContent = data.error || "Upload failed."; return; }
+    msg.textContent = `Added ${data.source} (${data.chunks} passages). Reload to see it in the list.`;
+  });
+</script>
+</body>
+</html>
