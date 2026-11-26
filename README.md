@@ -45,7 +45,7 @@ python -m eval.run_eval --llm   # answer eval: uses the API (about 10 calls)
 ## Status of this demo
 - ✅ Lint, 16 unit tests and the retrieval eval pass locally.
 - ⏳ **Not yet run against the live API**: the answer eval (`--llm`) and a real browser session haven't been executed. Run them with your own key before relying on the results.
-- ⏳ The Docker image build hasn't been verified locally; CI runs `docker build` on every push.
+- ✅ The Docker image builds in CI (see the Actions tab). The running container hasn't been tried against the live API.
 
 ## Limits (honest list)
 - Keyword retrieval misses paraphrases ("send it back" vs "return"). Use embeddings for that.
